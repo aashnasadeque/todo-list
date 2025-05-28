@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart To-Do App</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #f8f8f8;
+        display: flex;
+        height: 100vh;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: #fff;
+        padding: 24px;
+        border-right: 1px solid #eee;
+        overflow-y: auto;
+        position: relative;
+      }
+
+      .main {
+        flex: 1;
+        padding: 32px;
+        overflow-y: auto;
+      }
+
+      .task-input,
+      .category-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      input,
+      select {
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        color: #333;
+      }
+
+      input[type="color"] {
+        height: 42px;
+        width: 42px;
+        border: none;
+        padding: 0;
+      }
+
+      .add-btn {
+        background: #dc4c3e;
+        color: white;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .category-list li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0;
+        font-size: 14px;
+      }
+
+      .category-section {
+        margin-bottom: 40px;
+      }
+
+      .category-section h2 {
+        margin: 0;
+        padding: 12px 16px;
+        background: var(--default-color);
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .category-section.collapsed .task-list {
+        display: none;
+      }
+
+      .task {
+        background: #fff;
+        padding: 14px 16px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .task.done .text strong {
+        text-decoration: line-through;
+        color: #aaa;
+      }
+
+      .text {
+        font-size: 14px;
+      }
+
+      .text small {
+        display: block;
+        font-size: 12px;
+        color: #888;
+        margin-top: 6px;
+      }
+
+      .buttons button {
+        border: none;
+        background: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: #999;
+        margin-left: 8px;
+      }
+
+      .buttons button:hover {
+        color: #000;
+      }
+
+      body.dark {
+        background: #1e1e1e;
+        color: #eee;
+      }
+
+      body.dark .sidebar {
+        background: #2c2c2c;
+        border-right-color: #444;
+      }
+
+      body.dark .main {
+        background: #1e1e1e;
+      }
+
+      body.dark input,
+      body.dark select {
+        background: #333;
+        color: #eee;
+        border-color: #555;
+      }
+
+      body.dark .task {
+        background: #2a2a2a;
+      }
+
+      body.dark .add-btn {
+        background: #555;
+        color: white;
+      }
+
+      body.dark .category-section h2 {
+        color: white;
+      }
+
+      body.dark .buttons button {
+        color: #aaa;
+      }
+
+      body.dark .buttons button:hover {
+        color: white;
+      }
+
+      /* Collapsed sidebar styles */
+      body.collapsed .sidebar {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+        border: none;
+      }
+
+      .sidebar-toggle {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 1000;
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #333;
+      }
+
+      body.dark .sidebar-toggle {
+        color: white;
+      }
+
+      .sidebar-toggle:hover::after {
+        content: attr(title);
+        position: absolute;
+        top: 36px;
+        left: 0;
+        background: #333;
+        color: white;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body id="body">
+    <button id="toggleSidebar" class="sidebar-toggle" title="Close Sidebar">
+      ☰
+    </button>
+
+    <div class="sidebar">
+      <h2>Manage Categories</h2>
+      <button id="toggleTheme" class="add-btn" style="margin-bottom: 16px">
+        🌙 Dark Mode
+      </button>
+      <form class="category-form" onsubmit="addCategory(event)">
+        <input
+          type="text"
+          id="newCategoryName"
+          placeholder="New category"
+          required
+        />
+        <input type="color" id="newCategoryColor" value="#cccccc" />
+        <button class="add-btn">Add</button>
+      </form>
+      <ul id="categoryList" class="category-list"></ul>
+    </div>
+
+    <div class="main">
+      <h1>To-Do List</h1>
+      <div class="task-input">
+        <input type="text" id="taskInput" placeholder="Task description..." />
+        <select id="categorySelect"></select>
+        <input type="date" id="taskDate" />
+        <input type="time" id="taskTime" />
+        <select id="recurrenceSelect">
+          <option value="none">One-time</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+        <button class="add-btn" onclick="addTask()">+ Add</button>
+      </div>
+      <div id="taskContainer"></div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
